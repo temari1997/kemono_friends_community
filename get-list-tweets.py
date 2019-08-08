@@ -5,7 +5,6 @@ import datetime
 import time
 
 
-# In[2]:
 def authentication():
     from requests_oauthlib import OAuth1Session
     import csv
@@ -17,7 +16,7 @@ def authentication():
 
     return OAuth1Session(keys[0]["API_key"], keys[0]["API_secret"], keys[0]["Access_token"], keys[0]["Access_secret"])
 
-def getTweets(lastId):
+def getTweets(twitter, lastId):
     url = "https://api.twitter.com/1.1/lists/statuses.json"
 
     if lastId == 0:
@@ -34,17 +33,22 @@ def saveTweets(tweets):
     print(len(json.loads(tweets.text)))
     f.close()
 
-def work(lastId):
-    tweets = getTweets(lastId)
-    nextLastId = json.loads(tweets.text)[0]['id']
+def work(twitter, lastId):
+    tweets = getTweets(twitter, lastId)
+    if tweets.text != '[]':
+        nextLastId = json.loads(tweets.text)[0]['id']
+    else:
+        nextLastId = lastId
     saveTweets(tweets)
     return nextLastId
 
 #初期化
-twitter = authentication()
 lastId = 0
+
 while True:
-    nextId = work(lastId)
-    lastId = nextId
+    twitter = authentication()
+    nextlastId = work(twitter, lastId)
+    lastId = nextlastId
     print(datetime.datetime.now())
+
     time.sleep(600)
